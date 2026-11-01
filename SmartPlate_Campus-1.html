@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SmartPlate Campus</title>
+<style>
+:root{--green:#16784b;--dark:#16352a;--mint:#eaf6ef;--cream:#f7faf7;--orange:#f0a34a}
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:var(--cream);color:#20342b}
+header{background:linear-gradient(120deg,#123d2c,#218354);color:white;padding:30px 6%;display:flex;justify-content:space-between;align-items:center;gap:15px;flex-wrap:wrap}
+header h1{margin:0;font-size:clamp(26px,4vw,38px)}header p{margin:8px 0 0;color:#e0f4e8}
+.tag{border:1px solid #ffffff70;border-radius:30px;padding:9px 14px;font-size:13px}
+main{max-width:1050px;margin:28px auto;padding:0 18px}
+.intro{background:white;border-radius:18px;padding:22px;box-shadow:0 5px 20px #183b2510;margin-bottom:20px}
+h2{color:var(--dark);margin-top:0}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px}
+.card{background:white;border-radius:18px;padding:22px;box-shadow:0 5px 20px #183b2510}
+label{display:block;font-weight:bold;margin:14px 0 6px}input{width:100%;padding:12px;border:1px solid #ccd9d0;border-radius:10px;font-size:16px}
+button{border:0;background:var(--green);color:white;padding:12px 17px;border-radius:10px;font-size:15px;font-weight:bold;cursor:pointer;margin-top:15px}
+button:hover{background:#105f3b}.results{margin-top:17px;background:var(--mint);padding:16px;border-radius:12px;line-height:1.8}
+.metric{font-size:26px;font-weight:bold;color:var(--green)}.muted{color:#65766c;font-size:13px}
+footer{text-align:center;padding:25px;color:#65766c;font-size:13px}
+</style>
+</head>
+<body>
+<header>
+ <div><h1>🥗 SmartPlate Campus</h1><p>Smarter meal planning. Less avoidable food waste.</p></div>
+ <span class="tag">Working prototype · Sample data</span>
+</header>
+<main>
+ <section class="intro">
+  <h2>How it works</h2>
+  <p>SmartPlate estimates daily meal demand from recent sales, suggests a preparation quantity with a small safety buffer, and tracks the difference between meals prepared and meals sold.</p>
+  <p class="muted">This demonstration uses sample data. It is not yet connected to a real cafeteria or a trained AI model.</p>
+ </section>
+ <div class="grid">
+  <section class="card">
+   <h2>1. Demand Predictor</h2>
+   <p>Enter meal sales from the last three days.</p>
+   <label for="d1">Day 1 sales</label><input id="d1" type="number" min="0" value="105">
+   <label for="d2">Day 2 sales</label><input id="d2" type="number" min="0" value="110">
+   <label for="d3">Day 3 sales</label><input id="d3" type="number" min="0" value="120">
+   <button onclick="predict()">Predict demand</button>
+   <div id="prediction" class="results" aria-live="polite">Enter the recent sales and select Predict demand.</div>
+  </section>
+  <section class="card">
+   <h2>2. Waste Tracker</h2>
+   <p>Compare how many meals were prepared with how many were sold.</p>
+   <label for="prepared">Meals prepared</label><input id="prepared" type="number" min="0" value="118">
+   <label for="sold">Meals sold</label><input id="sold" type="number" min="0" value="110">
+   <button onclick="trackWaste()">Calculate surplus</button>
+   <div id="waste" class="results" aria-live="polite">Enter the prepared and sold meals to calculate the surplus.</div>
+  </section>
+ </div>
+ <section class="intro" style="margin-top:20px">
+  <h2>Our future vision</h2>
+  <p>With access to real cafeteria sales and information about holidays or campus events, SmartPlate could make better forecasts. Cafeterias could also explore safe, approved ways to donate suitable surplus food.</p>
+ </section>
+</main>
+<footer>SmartPlate Campus · Student sustainability prototype</footer>
+<script>
+function num(id){return Number(document.getElementById(id).value)}
+function predict(){
+ const vals=[num('d1'),num('d2'),num('d3')];
+ if(vals.some(v=>!Number.isFinite(v)||v<0)){document.getElementById('prediction').textContent='Please enter valid non-negative numbers.';return}
+ const demand=vals.reduce((a,b)=>a+b,0)/3;
+ const prep=Math.ceil(demand*1.05);
+ document.getElementById('prediction').innerHTML=
+  '<div>Predicted demand</div><div class="metric">'+demand.toFixed(1)+' meals</div>'+
+  '<div>Suggested preparation (including 5% safety buffer)</div><div class="metric">'+prep+' meals</div>'+
+  '<div class="muted">Method: average sales from the last three days. The 5% buffer is a prototype assumption.</div>';
+ document.getElementById('prepared').value=prep;
+}
+function trackWaste(){
+ const prepared=num('prepared'),sold=num('sold'),out=document.getElementById('waste');
+ if(!Number.isFinite(prepared)||!Number.isFinite(sold)||prepared<0||sold<0){out.textContent='Please enter valid non-negative numbers.';return}
+ if(sold>prepared){out.textContent='Meals sold cannot be greater than meals prepared. Please check the numbers.';return}
+ const leftover=prepared-sold,rate=prepared===0?0:leftover/prepared*100;
+ out.innerHTML='<div>Estimated surplus</div><div class="metric">'+leftover+' meals</div><div>Surplus rate</div><div class="metric">'+rate.toFixed(1)+'%</div><div class="muted">Surplus means prepared meals not sold; it does not automatically mean food was thrown away.</div>';
+}
+predict();trackWaste();
+</script>
+</body>
+</html>
