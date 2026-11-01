@@ -1,1 +1,1 @@
-# smartplate-campus
+index.html.
